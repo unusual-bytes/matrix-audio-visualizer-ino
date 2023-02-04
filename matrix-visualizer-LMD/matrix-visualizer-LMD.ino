@@ -11,8 +11,6 @@ const int LEDMATRIX_WIDTH    = LEDMATRIX_SEGMENTS * 8;
 // The LEDMatrixDriver class instance
 LEDMatrixDriver lmd(LEDMATRIX_SEGMENTS, LEDMATRIX_CS_PIN);
 
-int clearCount = 0;
-
 void setup() {
   Serial.begin(230400);
   Serial.setTimeout(0);
@@ -21,6 +19,8 @@ void setup() {
   lmd.setEnabled(true);
   lmd.setIntensity(1);   // 0 = low, 10 = high
 }
+
+
 
 String input = "";
 bool getInput() {
@@ -37,39 +37,53 @@ bool getInput() {
 int x = 0, y = 0; // start top left
 bool s = true;  // start with led on
 
+bool fill, upsideDown, controlGlow = false;
+
 void loop() {
 
   if (getInput()) {
+
+    // Serial.print("I received: ");
+    // Serial.println(input);
 
     if (input.toInt() == 0) {
       lmd.clear();
     }
 
-//        Serial.print("I received: ");
-//        Serial.println(input);  
+    if (input.length() == 2) {
+      if (input == "f1") fill = true;
+      if (input == "f0") fill = false;
+      if (input == "u1") upsideDown = true;
+      if (input == "u0") upsideDown = false;
+      if (input == "c1") controlGlow = true;
+      if (input == "c0") controlGlow = false;
+    }
 
     if (input.length() == 32) {
 
-//      if (clearCount > 5) {
-//      lmd.clear();
-//        clearCount = 0;
-//      }
-//
-//      clearCount++;
-lmd.clear();
+      lmd.clear();
 
       for (int i = 0; i < 32; i++) {
-        lmd.setPixel(i, String(input[i]).toInt(), s);
-//        Serial.println(int(input[i]));  
-//        Serial.println(i);  
-//        Serial.println(" "); 
+
+        if (fill && upsideDown) {
+          for (int f = String(input[i]).toInt(); f < 8; f++) {
+            lmd.setPixel(i, f, s);
+          }
+        } else if (fill && !upsideDown) {
+          for (int f = String(input[i]).toInt(); f >= 0; f--) {
+            lmd.setPixel(i, f, s);
+          }
+        } else if (!fill) {
+          lmd.setPixel(i, String(input[i]).toInt(), s);
+        }
+
       }
 
       // Flush framebuffer
       lmd.display();
     }
 
-    //done processing? reset the input string
+    // done processing? reset the input string
     input = "";
   }
 }
