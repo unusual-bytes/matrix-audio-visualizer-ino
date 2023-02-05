@@ -11,16 +11,16 @@ const int LEDMATRIX_WIDTH    = LEDMATRIX_SEGMENTS * 8;
 // The LEDMatrixDriver class instance
 LEDMatrixDriver lmd(LEDMATRIX_SEGMENTS, LEDMATRIX_CS_PIN);
 
+bool initLMD = false;
+
 void setup() {
   Serial.begin(230400);
   Serial.setTimeout(0);
 
   // init the display
-  lmd.setEnabled(true);
-  lmd.setIntensity(1);   // 0 = low, 10 = high
+  lmd.setEnabled(false); // Have to do this, otherwise getting random LEDs lit up once the arduino receives power pt.1
+  lmd.setIntensity(0);   // 0 = low, 10 = high
 }
-
-
 
 String input = "";
 bool getInput() {
@@ -37,11 +37,17 @@ bool getInput() {
 int x = 0, y = 0; // start top left
 bool s = true;  // start with led on
 
-bool fill, upsideDown, controlGlow = false;
+bool fill, upsideDown = false;
 
 void loop() {
 
   if (getInput()) {
+
+    // Have to do this, otherwise getting random LEDs lit up once the arduino receives power pt.2
+    if (!initLMD) {
+      lmd.setEnabled(true);
+      initLMD = true;
+    }
 
     // Serial.print("I received: ");
     // Serial.println(input);
@@ -55,8 +61,9 @@ void loop() {
       if (input == "f0") fill = false;
       if (input == "u1") upsideDown = true;
       if (input == "u0") upsideDown = false;
-      if (input == "c1") controlGlow = true;
-      if (input == "c0") controlGlow = false;
+
+      if (String(input[0]) == "b") lmd.setIntensity(String(input[1]).toInt());
+
     }
 
     if (input.length() == 32) {
