@@ -49,8 +49,8 @@ void loop() {
       initLMD = true;
     }
 
-    // Serial.print("I received: ");
-    // Serial.println(input);
+//    Serial.print("I received: ");
+//    Serial.println(input);
 
     if (input.toInt() == 0) {
       lmd.clear();
@@ -87,6 +87,22 @@ void loop() {
       }
 
       // Flush framebuffer
+      lmd.display();
+    } else if (input.length() == 256) {
+
+      for (int i = 0; i < input.length(); i++) {
+
+        // Convert the index to x and y coordinates
+        int x = i / 32;
+        int y = i % 32;
+        
+        // Set the LED based on the value in the input string
+        if (String(input[i]).toInt() == 1)
+          lmd.setPixel(y, x, true);
+        else
+          lmd.setPixel(y, x, false);
+      }
+
       lmd.display();
     }
 
